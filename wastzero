@@ -1,0 +1,128 @@
+gupsikzero/
+├── index.html
+├── package.json
+├── vite.config.js
+├── .gitignore
+└── src/
+    ├── main.jsx
+    └── App.jsx
+
+
+node_modules
+dist
+
+
+{
+  "name": "gupsikzero",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^5.0.0"
+  }
+}
+
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});
+
+
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>급식제로</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+
+
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+
+
+import React, { useState, useRef } from 'react';
+
+function App() {
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [score, setScore] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  const startCamera = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+  };
+
+  const captureImage = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    setCapturedImage(dataUrl);
+    const randomScore = Math.floor(Math.random() * 100) + 1;
+    setScore(randomScore);
+  };
+
+  return (
+    <div style={{ textAlign: 'center', padding: '2rem' }}>
+      <h1>급식제로</h1>
+      <p>잔반 없는 식판, 점수를 매겨보세요!</p>
+      {!capturedImage ? (
+        <>
+          <video ref={videoRef} autoPlay playsInline width="320" height="240" style={{ borderRadius: '12px' }} />
+          <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }} />
+          <div style={{ marginTop: '1rem' }}>
+            <button onClick={startCamera}>카메라 시작</button>
+            <button onClick={captureImage} style={{ marginLeft: '1rem' }}>사진 촬영</button>
+          </div>
+        </>
+      ) : (
+        <div>
+          <img src={capturedImage} alt="촬영된 이미지" width="320" style={{ borderRadius: '12px' }} />
+          <h2 style={{ marginTop: '1rem' }}>당신의 잔반 점수는...</h2>
+          <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'green' }}>{score}점</p>
+          <button onClick={() => { setCapturedImage(null); setScore(null); }} style={{ marginTop: '1rem' }}>다시 측정하기</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
